@@ -38,7 +38,7 @@
 //   }
 // );
 const mongoose = require("mongoose");
-const FitnessPlan = require("../src/model/planModal");
+const FitnessPlan = require("../model/planModal");
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
