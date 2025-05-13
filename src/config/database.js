@@ -9,5 +9,8 @@ main()
   });
 
 async function main() {
-  await mongoose.connect(process.env.LOCAT_HOST_URL);
+  await mongoose.connect(process.env.LOCAT_HOST_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 }
