@@ -17,7 +17,7 @@
     }
   ],
   "functions": {
-    "api/cron.js": {
+    "src/utils/planCrone.js": {
       "schedule": "55 * * * *"
     }
   }
