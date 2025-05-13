@@ -2,7 +2,7 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 const express = require("express");
-const serverless = require("serverless-http");
+// const serverless = require("serverless-http");
 const app = express();
 const bodyParser = require("body-parser");
 const port = 4000;
@@ -13,8 +13,8 @@ require("./src/config/database");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/", routeRouter);
-// app.listen(port, () => {
-//   console.log(`Server is Runing On the port${port}`);
-// });
-module.exports = app;
-module.exports.handler = serverless(app);
+app.listen(port, () => {
+  console.log(`Server is Runing On the port${port}`);
+});
+// module.exports = app;
+// module.exports.handler = serverless(app);
