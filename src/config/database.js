@@ -10,7 +10,5 @@ main()
 
 async function main() {
   // await mongoose.connect(process.env.MONGO_URI);
-  await mongoose.connect(
-    "mongodb+srv://team:6LUGGmVwVIT4wxdN@cluster0.fmkhzh4.mongodb.net/"
-  );
+  await mongoose.connect(process.env.MONGO_URI);
 }
