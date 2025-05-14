@@ -13,6 +13,9 @@ require("./src/config/database");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.get("/", (req, res) => {
+  res.send("Hello, Express");
+});
 app.use("/", routeRouter);
 app.listen(port, () => {
   console.log(`Server is Runing On the port${port}`);
