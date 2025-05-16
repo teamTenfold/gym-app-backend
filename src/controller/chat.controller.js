@@ -48,7 +48,7 @@ const createChat = async (req, res) => {
 
 const getChat = async (req, res) => {
   const userId = req.user.userID;
-  console.log("UUUUUU", req);
+  console.log("UUUUUU", userId);
   try {
     const allChats = await chatModel
       .find({ users: userId })

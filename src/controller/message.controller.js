@@ -41,7 +41,10 @@ const createMessage = async (req, res) => {
 
 const getMessage = async (req, res) => {
   const chatID = req.query.chatID;
-  console.log("querry", req.query);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
   try {
     const message = await messageModal
       .find({
@@ -51,7 +54,10 @@ const getMessage = async (req, res) => {
       .populate({
         path: "user",
         select: "firstName",
-      });
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       data: message,
