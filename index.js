@@ -32,7 +32,7 @@ const io = new Server(server, {
   },
   transports: ["websocket", "polling"],
 });
-
+io.attach(server);
 chatSocket(io);
 
 server.listen(port, () => {
