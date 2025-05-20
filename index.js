@@ -28,7 +28,9 @@ const io = new Server(server, {
   cors: {
     origin: "*",
   },
+  transports: ["websocket", "polling"],
 });
+
 chatSocket(io);
 
 server.listen(port, () => {
