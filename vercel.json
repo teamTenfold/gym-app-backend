@@ -9,11 +9,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "index.js",
-      "headers": {
-        "Connection": "Upgrade",
-        "Upgrade": "websocket"
-      }
+      "dest": "index.js"
     }
   ]
 }
