@@ -1,25 +1,15 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/socket.io/(.*)",
-      "destination": "/api/socket.io"
+      "src": "index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/socket.io",
-      "dest": "/api/socket.io",
-      "headers": {
-        "Connection": "Upgrade",
-        "Upgrade": "websocket"
-      }
+      "src": "/(.*)",
+      "dest": "index.js"
     }
-  ],
-  "functions": {
-    "api/socket.io": {
-      "memory": 3008,
-      "maxDuration": 30
-    }
-  }
+  ]
 }
