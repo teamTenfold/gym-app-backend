@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/socket.io/(.*)",
-      "dest": "index.js",
+      "dest": "/index.js",
       "headers": {
         "Connection": "Upgrade",
         "Upgrade": "websocket"
@@ -17,13 +17,14 @@
     },
     {
       "src": "/(.*)",
-      "dest": "index.js"
+      "dest": "/index.js"
     }
   ],
   "functions": {
     "index.js": {
       "memory": 3008,
-      "maxDuration": 30
+      "maxDuration": 30,
+      "supportsResponseStreaming": true
     }
   }
 }

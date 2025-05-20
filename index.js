@@ -25,6 +25,7 @@ require("./src/config/database");
 
 const chatSocket = require("./src/sockets/chatSocket");
 const io = new Server(server, {
+  path: "/socket.io",
   cors: {
     origin: "*",
   },
