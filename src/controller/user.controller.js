@@ -119,7 +119,7 @@ const userLogin = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userID: findUser._id, email },
+      { userID: findUser._id, email, role: findUser.role },
       process.env.TOKEN_KEY
     );
 
@@ -185,7 +185,7 @@ const verifyCode = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userID: updatedUser._id, email },
+      { userID: updatedUser._id, email, role: updatedUser.role },
       process.env.TOKEN_KEY
     );
 

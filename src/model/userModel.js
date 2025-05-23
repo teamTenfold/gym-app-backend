@@ -136,6 +136,19 @@ const userSchema = new mongoose.Schema({
           required: false,
         },
 
+        clients: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Client", // Must match Client model name
+          },
+        ],
+        requests: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Client", // Must match Client model name
+          },
+        ],
+
         clientRequests: {
           type: Number,
           default: 0,

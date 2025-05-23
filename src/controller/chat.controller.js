@@ -56,8 +56,19 @@ const getChat = async (req, res) => {
         path: "users",
         select:
           "firstName lastName email traineeProfile.profileImage trainerProfile.profileImage ",
+        match: { _id: { $ne: userId } },
       })
       .sort({ updatedAt: -1 });
+
+    // const filteredChats = allChats.map((chat) => {
+    //   const otherUser = chat.users.find(
+    //     (user) => user._id.toString() !== userId
+    //   );
+    //   return {
+    //     ...chat.toObject(),
+    //     users: otherUser,
+    //   };
+    // });
 
     return res.status(200).json({
       status: true,

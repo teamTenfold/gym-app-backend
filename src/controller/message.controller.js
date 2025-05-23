@@ -22,6 +22,7 @@ const createMessage = async (req, res) => {
       .populate({
         path: "users",
         select: "firstName",
+        match: { _id: { $ne: userId } },
       });
     return res.status(200).json({
       message: "Message Sent Successfully",
