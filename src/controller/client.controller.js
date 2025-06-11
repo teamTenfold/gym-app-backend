@@ -1,6 +1,7 @@
+const mongoose = require("mongoose");
 const clientModel = require("../model/clientModel");
 const userModel = require("../model/userModel");
-
+const Schema = mongoose.Schema;
 const sendRequest = async (req, res) => {
   const userId = req.user.userID;
   const { trainerID } = req.body;
@@ -196,7 +197,9 @@ const deleteRequest = async (req, res) => {
 
 const getallRequests = async (req, res) => {
   const trainerID = req.user.userID;
-  console.log("IDD", trainerID);
+  const limit = parseInt(req.query.limit);
+  const page = parseInt(req.query.page);
+  const skip = (page - 1) * limit;
   if (!trainerID) {
     return res.status(400).json({
       status: false,
@@ -205,6 +208,10 @@ const getallRequests = async (req, res) => {
   }
 
   try {
+    const totalClients = await clientModel.countDocuments({
+      status: "pending",
+    });
+    const totalPages = Math.ceil(totalClients / limit);
     const clients = await clientModel
       .find({
         trainerID,
@@ -213,7 +220,10 @@ const getallRequests = async (req, res) => {
       .populate({
         path: "userID",
         select: "firstName lastName email",
-      });
+      })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     if (clients.length === 0) {
       return res.status(200).json({
@@ -227,6 +237,8 @@ const getallRequests = async (req, res) => {
       status: true,
       message: "requests retrieved successfully",
       data: clients,
+      page: page,
+      totalPages: totalPages,
     });
   } catch (error) {
     console.error("Get requests error:", error);
@@ -240,6 +252,9 @@ const getallRequests = async (req, res) => {
 
 const getClients = async (req, res) => {
   const trainerID = req.user.userID;
+  const limit = parseInt(req.query.limit);
+  const page = parseInt(req.query.page);
+  const skip = (page - 1) * limit;
 
   if (!trainerID) {
     return res.status(400).json({
@@ -249,6 +264,10 @@ const getClients = async (req, res) => {
   }
 
   try {
+    const totalClients = await clientModel.countDocuments({
+      status: "accepted",
+    });
+    const totalPages = Math.ceil(totalClients / limit);
     const clients = await clientModel
       .find({
         trainerID,
@@ -256,8 +275,11 @@ const getClients = async (req, res) => {
       })
       .populate({
         path: "userID",
-        select: "firstName lastName email",
-      });
+        select: "firstName lastName email traineeProfile.profileImage",
+      })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     if (clients.length === 0) {
       return res.status(200).json({
@@ -271,6 +293,8 @@ const getClients = async (req, res) => {
       status: true,
       message: "Clients retrieved successfully",
       data: clients,
+      page: page,
+      totalPages: totalPages,
     });
   } catch (error) {
     console.error("Get clients error:", error);
@@ -282,10 +306,153 @@ const getClients = async (req, res) => {
   }
 };
 
+const HomeClient = async (req, res) => {
+  const trainerID = req.user.userID;
+  console.log("TraineriD", trainerID);
+
+  if (!trainerID) {
+    return res.status(400).json({
+      status: false,
+      message: "Trainer ID is required",
+    });
+  }
+
+  try {
+    const [myClientsCount, myRequestsCount, result] = await Promise.all([
+      clientModel.countDocuments({
+        trainerID: new mongoose.Types.ObjectId(trainerID),
+        status: "accepted",
+      }),
+      clientModel.countDocuments({
+        trainerID: new mongoose.Types.ObjectId(trainerID),
+        status: "pending",
+      }),
+      clientModel.aggregate([
+        {
+          $match: {
+            trainerID: new mongoose.Types.ObjectId(trainerID),
+            status: "accepted",
+          },
+        },
+
+        { $sort: { createdAt: -1 } },
+
+        { $limit: 10 },
+
+        {
+          $lookup: {
+            from: "users",
+            localField: "userID",
+            foreignField: "_id",
+            as: "userData",
+          },
+        },
+        { $unwind: "$userData" },
+
+        {
+          $group: {
+            _id: null,
+            myClients: {
+              $push: {
+                clientId: "$_id",
+                userId: "$userID",
+                firstName: "$userData.firstName",
+                lastName: "$userData.lastName",
+                email: "$userData.email",
+                profileImage: "$userData.traineeProfile.profileImage",
+              },
+            },
+          },
+        },
+
+        {
+          $addFields: {
+            clientProfiles: {
+              $slice: ["$myClients.profileImage", 5],
+            },
+          },
+        },
+
+        {
+          $lookup: {
+            from: "clients",
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: [
+                          "$trainerID",
+                          new mongoose.Types.ObjectId(trainerID),
+                        ],
+                      },
+                      { $eq: ["$status", "pending"] },
+                    ],
+                  },
+                },
+              },
+              { $sort: { createdAt: -1 } },
+              { $limit: 5 },
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "userID",
+                  foreignField: "_id",
+                  as: "userData",
+                },
+              },
+              { $unwind: "$userData" },
+              {
+                $project: {
+                  profileImage: "$userData.traineeProfile.profileImage",
+                  _id: 0,
+                },
+              },
+            ],
+            as: "myReq",
+          },
+        },
+
+        {
+          $addFields: {
+            myReq: "$myReq.profileImage",
+          },
+        },
+        { $project: { _id: 0 } },
+      ]),
+    ]);
+    const aggregatedData = result[0] || {
+      myClients: [],
+      clientProfiles: [],
+      myReq: [],
+    };
+
+    return res.status(200).json({
+      status: true,
+      data: {
+        counts: {
+          myClients: myClientsCount,
+          myRequests: myRequestsCount,
+        },
+        clients: aggregatedData.myClients || [],
+        clientProfiles: aggregatedData.clientProfiles || [],
+        pendingRequests: aggregatedData.myReq || [],
+      },
+    });
+  } catch (error) {
+    console.error("Error in allClients:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error while fetching client data",
+    });
+  }
+};
 module.exports = {
   sendRequest,
   acceptRequest,
   deleteRequest,
   getallRequests,
   getClients,
+  HomeClient,
 };

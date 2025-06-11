@@ -9,6 +9,10 @@ const {
 const jwt = require("jsonwebtoken");
 
 const userSignup = async (req, res) => {
+  const file = req.file;
+  console.log("SignUp Data", file);
+  // return;
+
   try {
     const { firstName, lastName, email, password, role, ...profileData } =
       req.body;
@@ -55,6 +59,7 @@ const userSignup = async (req, res) => {
         certification: profileData.certification,
         specialization: profileData.specialization || [],
         bio: profileData.bio,
+        certification: file.path,
       };
     }
 
@@ -301,7 +306,6 @@ const resetPassword = async (req, res) => {
   try {
     const { id } = req.params;
     const { password } = req.body;
-
     const user = await User.findOne({ _id: id });
 
     if (!user) {
@@ -347,6 +351,36 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const currentPass = async (req, res) => {
+  const userId = req.user.userID;
+  const { password } = req.body;
+  try {
+    const checUser = await User.findOne({ _id: userId });
+    console.log("User", checUser);
+    const isSamePassword = await bcrypt.compare(password, checUser.password);
+    if (!isSamePassword) {
+      return res.status(400).json({
+        message: "Please enter correct password",
+        status: false,
+        isSamePassword,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Password Matched",
+      status: true,
+      isSamePassword,
+    });
+  } catch (error) {
+    console.error("Error in resendOtp:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   userSignup,
   userLogin,
@@ -354,4 +388,5 @@ module.exports = {
   resendOtp,
   forgotPassword,
   resetPassword,
+  currentPass,
 };

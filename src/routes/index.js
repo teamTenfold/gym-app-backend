@@ -7,6 +7,7 @@ const client = require("./clientRoute");
 const plan = require("./planRoute");
 const chat = require("./chatRoute");
 const message = require("./messageRoute");
+const rating = require("./ratingRoute");
 
 routeRouter.use("/user", user);
 routeRouter.use("/trainer", trainer);
@@ -14,5 +15,6 @@ routeRouter.use("/client", auth, client);
 routeRouter.use("/plan", plan);
 routeRouter.use("/chat", auth, chat);
 routeRouter.use("/message", auth, message);
+routeRouter.use("/rating", auth, rating);
 
 module.exports = routeRouter;
